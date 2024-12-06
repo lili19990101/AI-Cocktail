@@ -1,0 +1,184 @@
+---
+
+---
+<section class="section flex items-center">
+  <div class="container">
+    <div class="row justify-center">
+      <div
+        class="lg:col-7 md:col-9 mb-8 text-center bg-white p-8 rounded-lg shadow-lg">
+        <h1 class="mb-6 text-4xl font-bold gradient-text">
+          Create an AI Cocktail
+        </h1>
+        <input
+          id="cocktail-input"
+          type="text"
+          placeholder="Enter your cocktail order here..."
+          class="mb-4 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+        />
+        <button
+          id="get-cocktail"
+          class="btn btn-primary mb-8 bg-orange-500 text-white py-2 px-6 rounded-lg hover:bg-orange-600 transition duration-300">
+          Get My Cocktail
+        </button>
+        <div id="cocktail-result" class="mb-4 text-left"></div>
+        <div class="my-20"></div>  <!-- 新添加的空白区域 -->
+        <p class="mb-4 text-lg font-bold">Need Some Inspiration?</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div
+            class="text-box bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+            <p class="text-gray-600 text-colored">
+              A signature wedding cocktail crafted with love
+            </p>
+          </div>
+          <div
+            class="text-box bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+            <p class="text-gray-600 text-colored">
+              A signature cocktail for my birthday party that utilizes tequila
+            </p>
+          </div>
+          <div
+            class="text-box bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+            <p class="text-gray-600 text-colored">
+              Celebrate the start of summer with a light and refreshing cocktail
+            </p>
+          </div>
+          <div
+            class="text-box bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+            <p class="text-gray-600 text-colored">
+              A spicy cocktail that is bright red
+            </p>
+          </div>
+        </div>
+        <div class="my-20"></div>  <!-- 新添加的空白区域 -->
+        <div class="my-20"></div>  <!-- 新添加的空白区域 -->
+        <!-- 新增网站描述部分 -->
+        <div class="mb-8 text-left">
+          <h2 class="text-2xl font-semibold mb-4 text-gray-800">What is Aibar?</h2>
+          <p class="text-gray-600 mb-4">
+            Aibar is your personal AI-powered cocktail recipe generator. Whether you're planning a party, looking for a signature drink, or just want to try something new, our AI will create the perfect cocktail recipe for you.
+          </p>
+
+          <h2 class="text-2xl font-semibold mb-4 text-gray-800">How Aibar Works</h2>
+          <ol class="list-decimal list-inside text-gray-600 mb-4">
+            <li class="mb-2">Enter your cocktail preferences or requirements</li>
+            <li class="mb-2">Our AI analyzes thousands of cocktail recipes and combinations</li>
+            <li class="mb-2">Get a personalized recipe with ingredients and instructions</li>
+          </ol>
+
+          <h2 class="text-2xl font-semibold mb-4 text-gray-800">What You Can Create by Aibar</h2>
+          <ul class="list-disc list-inside text-gray-600 mb-6">
+            <li>Custom cocktails based on your favorite ingredients</li>
+            <li>Signature drinks for special occasions</li>
+            <li>Cocktails that match specific flavor profiles</li>
+            <li>Drinks using ingredients you have on hand</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div> 
+</section>
+
+<script>
+    // 获取页面上的元素
+    const getButton = document.getElementById('get-cocktail');
+    const inputElement = document.getElementById('cocktail-input') as HTMLInputElement;
+    const resultDiv = document.getElementById('cocktail-result');
+  
+    // 检查所有必需的元素是否存在
+    if (getButton && inputElement && resultDiv) {
+      // 为按钮添加点击事件监听器
+      getButton.addEventListener('click', async () => {
+        // 获取输入框的值
+        const input = inputElement.value;
+        resultDiv.innerHTML = '<p class="text-center gradient-text text-xl font-semibold">Generating recipe...</p>'; // 显示加载信息
+  
+        try {
+          // 发送POST请求到/api/getCocktail端点
+          const response = await fetch('/api/getCocktail', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ input }),
+          });
+  
+          // 解析响应数据
+          const data = await response.json();
+          if (data.result) {
+            // 解析和格式化结果
+            const formattedResult = formatCocktailRecipe(data.result);
+            resultDiv.innerHTML = formattedResult;
+          } else {
+            resultDiv.innerHTML = '<p class="text-center">No result found</p>';
+          }
+        } catch (error) {
+          resultDiv.innerHTML = '<p class="text-center">Error fetching cocktail recipe</p>';
+        }
+      });
+    }
+  
+    function formatCocktailRecipe(recipe) {
+      // 使用正则表达式分割不同部分
+      const parts = recipe.split(/\*\*(.*?)\*\*/);
+      let formattedHtml = '<div class="cocktail-recipe">';
+      
+      for (let i = 1; i < parts.length; i += 2) {
+        const title = parts[i];
+        const content = parts[i + 1];
+        
+        formattedHtml += `<h2 class="recipe-section-title">${title}</h2>`;
+        formattedHtml += `<div class="recipe-section-content">${formatContent(content)}</div>`;
+      }
+      
+      return formattedHtml + '</div>';
+    }
+  
+    function formatContent(content) {
+      // 格式化无序列表，保留"-"符号
+      content = content.replace(/(?:^|\n)- (.+)/g, '<li><span class="list-marker">-</span> $1</li>');
+      content = content.replace(/(<li><span class="list-marker">-<\/span>.*<\/li>(\n|$))+/g, '<ul class="recipe-list">$&</ul>');
+      
+      // 格式化有序列表
+      content = content.replace(/(?:^|\n)(\d+\. .+)/g, '<li>$1</li>');
+      content = content.replace(/(<li>\d+\..*<\/li>(\n|$))+/g, '<ol class="recipe-steps">$&</ol>');
+      
+      // 处理段落
+      content = content.replace(/(?:^|\n)(?!<[uo]l|<li)(.+)/g, '<p>$1</p>');
+      
+      return content;
+    }
+  </script>
+
+<style>
+    :global(.gradient-text) {
+      background: linear-gradient(to right, #4a90e2, #ee3e87);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .text-colored {
+      color: #e45b88;
+    }
+    .cocktail-recipe {
+      text-align: left;
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    :global(.recipe-section-title) {
+      color: #e45b88;
+      font-size: 1.2em;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .recipe-section-content {
+      margin-bottom: 15px;
+    }
+    .recipe-list, .recipe-steps {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+    .recipe-list li, .recipe-steps li {
+      margin-bottom: 5px;
+    }
+  </style>
