@@ -1,11 +1,8 @@
 // src/pages/api/getCocktail.ts
 import type { APIRoute } from 'astro';
+import { SYSTEM_PROMPT, baseUrl, model, temperature, maxTokens } from './prompt';
 const apiKey = import.meta.env.OPENAI_API_KEY;
 //const apiKey = process.env.OPENAI_API_KEY;
-const baseUrl = "https://openrouter.ai/api";
-const model = "gpt-3.5-turbo";
-const temperature = 0.5;    
-const maxTokens = 500;
 
 
 export const POST: APIRoute = async ({ request }) => {
@@ -13,10 +10,7 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('input--->:', input);
     let body = {
         messages: [
-            {
-                role: "system",
-                content: "You are a professional cocktail recipe creator. Generate a professional cocktail recipe for a [description of the cocktail] including the following details: A detailed description of the cocktail\'s flavor profile, ingredients, and presentation. A step-by-step set of instructions for preparing the cocktail, starting from any ingredient infusions if necessary. Include the ABV (alcohol by volume), calories, and net carbs for one serving of the cocktail. List the ingredients clearly with exact measurements and provide garnish suggestions. Ensure the tone is sophisticated and appeals to an audience looking for a high-end cocktail experience."
-            },
+            SYSTEM_PROMPT,
             {
                 role: "user",
                 content: input
