@@ -5,11 +5,13 @@ import sitemap from "@astrojs/sitemap";
 import icon from "astro-icon";
 
 import vercel from "@astrojs/vercel/serverless";
-
+ 
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
   site: "https://www.aibar.app",
   integrations: [tailwind(), mdx(), sitemap(), icon()],
-  adapter: vercel(),
+  adapter: vercel({
+    runtime: 'nodejs20.x'
+  }),
 });
